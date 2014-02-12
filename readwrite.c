@@ -142,6 +142,7 @@ void write_sectors (int64_t start_sector, unsigned int num_sectors, void *from)
     }
 }
 
+extern void check(char[]);
 
 int main (int argc, char **argv)
 {
@@ -165,7 +166,7 @@ int main (int argc, char **argv)
     printf("Dumping sector %d:\n", the_sector);
     read_sectors(the_sector, 1, buf);
     print_sector(buf);
-
+	check(buf);
     close(device);
     return 0;
 }
