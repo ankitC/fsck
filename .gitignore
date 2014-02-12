@@ -17,4 +17,7 @@
 *.out
 *.app
 
+#Ignoring the disk
+disk
+
 tags
