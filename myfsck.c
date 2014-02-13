@@ -85,7 +85,7 @@ void check(char buf[])
 		{
 
 			struct partition primary_ext_part = my_mbr->entries[i];
-			struct partition prev_part = primary_ext_part;
+			unsigned int offset = primary_ext_part.start_sect;
 			read_sectors(primary_ext_part.start_sect, 1, ebr_buf);
 			while(1)
 			{
@@ -96,15 +96,14 @@ void check(char buf[])
 					e_entry->entry = ebr_data->ebr_entry;
 					e_entry->next_entry = NULL;
 					e_entry->id = entry_number++;
-					e_entry->entry.start_sect += prev_part.start_sect;
+					e_entry->entry.start_sect += offset;
 					table_end->next_entry = e_entry;
 					table_end = e_entry;
 					if(ebr_data->next_ebr.start_sect == 0)
 						break;
-					prev_part = (struct partition) e_entry->entry;
-					next_sector_to_read = primary_ext_part.start_sect \
-										  + ebr_data->next_ebr.start_sect;
+					next_sector_to_read = offset+ebr_data->next_ebr.start_sect;
 					read_sectors(next_sector_to_read, 1, ebr_buf);
+					offset = next_sector_to_read;
 				}
 			}
 		}
