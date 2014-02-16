@@ -10,7 +10,6 @@ extern const unsigned int sector_size_bytes;
 
 void make_mbr(int device)
 {
-	
 	unsigned char buf[sector_size_bytes];  
 	unsigned int i = 0;
 	unsigned int entry_number = 1;
@@ -136,4 +135,22 @@ void free_mbr()
 	}
 	table_start = NULL;
 	table_end = NULL;
+}
+
+int get_start_sector(unsigned int partition_number)
+{
+	struct mbr_entry* m_entry = table_start;
+	unsigned int start_sector = -1;
+	unsigned int partition_to_check = partition_number;
+	while(partition_number && m_entry != NULL)
+	{
+		partition_number--;
+		if(partition_to_check == m_entry->id)
+		{
+			start_sector = m_entry->entry.start_sect;
+			return start_sector;
+		}
+		m_entry = m_entry->next_entry;
+	}
+	return -1;
 }

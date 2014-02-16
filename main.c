@@ -44,6 +44,7 @@ int main (int argc, char **argv)
 	{
 		check_mbr(mbr_entry_to_inspect);
 	}
+	verify_partition(1);
 	
 	close(device);
 	free_mbr();
