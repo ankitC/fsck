@@ -35,7 +35,7 @@ struct mbr_entry
 void make_mbr();
 void print_mbr();
 void free_mbr();
-extern void verify_partition(int partition_number);
 
+extern void verify_partition(int partition_number);
 
 #endif
