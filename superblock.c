@@ -16,23 +16,20 @@
 #define S_IFDIR  0040000
 #define S_IFMT  00170000
 #define S_ISDIR(m)      (((m) & S_IFMT) == S_IFDIR)
+#define CEIL(a,b) ((a+b-1)/b)
+
 
 extern const unsigned int sector_size_bytes;
 
 static struct ext2_super_block* super_block = NULL;
+static struct ext2_group_desc* group_desc_table = NULL;
 static char* block_bitmap = NULL;
 static char* inode_bitmap = NULL;
 
 static struct ext2_inode* inode_table = NULL;
 static volatile int group_start_sector = 0;
 
-struct group_descriptor_t
-{
-	struct ext2_group_desc group_desc;
-	char padding[512 - sizeof(struct ext2_group_desc)];
-};
-
-
+#if 0
 static void make_block_bitmaps(struct group_descriptor_t group_descriptor)
 {
 	int num_sectors_block_bitmap = EXT2_BLOCKS_PER_GROUP(super_block) \
@@ -41,7 +38,7 @@ static void make_block_bitmaps(struct group_descriptor_t group_descriptor)
 	int block_bitmap_sector = group_descriptor.group_desc.bg_block_bitmap * SECTORS_PER_BLOCK + group_start_sector;
 
 	read_sectors(block_bitmap_sector, num_sectors_block_bitmap, block_buf);
-	
+
 	int block_bitmap_size = 0;
 	if((EXT2_BLOCKS_PER_GROUP(super_block) % 8) == 0)
 		block_bitmap_size = EXT2_BLOCKS_PER_GROUP(super_block) / 8;
@@ -49,6 +46,7 @@ static void make_block_bitmaps(struct group_descriptor_t group_descriptor)
 		block_bitmap_size = EXT2_BLOCKS_PER_GROUP(super_block) / 8 + 1;
 	memcpy(block_bitmap, block_buf, (size_t)block_bitmap_size);
 }
+
 
 static void make_inode_bitmaps(struct group_descriptor_t group_descriptor)
 {
@@ -91,27 +89,78 @@ void check_inode(int inode_number)
 		printf("Not a dir\n");
 }
 
+#endif
 
-void verify_partition(int partition_start_sector)
+/* Reading the super block from the partition */
+void read_super_block(int partition_start_sector)
 {
 	char superblock_buf[SUPERBLOCK_SIZE];
 	int superblock_start_sector = (partition_start_sector) + SUPERBLOCK_OFFSET/SECTOR_SIZE;
-	int current_group_number = 0;
-	struct group_descriptor_t group_descriptor;
-	
-	unsigned int inode_number = 0;
-	
 	read_sectors(superblock_start_sector, SUPERBLOCK_SIZE/SECTOR_SIZE, superblock_buf);
+	super_block = calloc(1, sizeof(struct ext2_super_block));
 	super_block = (struct ext2_super_block*) superblock_buf;
+}
+
+
+void read_group_descriptor_table(int partition_start_sector)
+{
+	int total_number_of_groups = CEIL(super_block->s_blocks_count, EXT2_BLOCKS_PER_GROUP(super_block));
+
+	int group_desc_table_size = CEIL(total_number_of_groups *
+			sizeof(struct ext2_group_desc),sector_size_bytes);
+	int buf_size = CEIL(group_desc_table_size, SECTOR_SIZE) * SECTOR_SIZE;
+	char group_desc_table_buf[buf_size];
+
+	int group_desc_table_sector = partition_start_sector + SUPERBLOCK_OFFSET
+		/ SECTOR_SIZE + SUPERBLOCK_SIZE / SECTOR_SIZE;
+
+	int group_desc_num_sectors = CEIL(group_desc_table_size, SECTOR_SIZE);
+#ifdef DEBUG
+	printf("Total Number of Groups = %d \n", total_number_of_groups);
+	printf("Group Desc Table Sector = %d \n", group_desc_table_sector);
+	printf("Group Desc Table Size = %d \n", 	total_number_of_groups * sizeof(struct ext2_group_desc));
+	printf("GD num_sectors = %d \n", group_desc_num_sectors);
+	printf("bufsize = %d \n", buf_size);
+#endif
+	read_sectors(group_desc_table_sector,  group_desc_num_sectors
+					,group_desc_table_buf);
+	group_desc_table =
+		calloc(total_number_of_groups, sizeof(struct ext2_group_desc));
+
+	memcpy(group_desc_table, group_desc_table_buf, \
+			total_number_of_groups * sizeof(struct ext2_group_desc));
+#ifdef debug
+	int i = 0;
+	for(i = 0; i< total_number_of_groups; i++)
+	{
+		printf("%d %d %d\n", group_desc_table[i].bg_block_bitmap, group_desc_table[i].bg_inode_bitmap, group_desc_table[i].bg_inode_table);
+	}
+#endif
+}
+
+void verify_partition(int partition_start_sector)
+{
+	int superblock_start_sector = (partition_start_sector) + SUPERBLOCK_OFFSET/SECTOR_SIZE;
+	int current_group_number = 0;
+	unsigned int inode_number = 0;
+
+
+	/* Reading Super_block */
+	read_super_block(partition_start_sector);
+
+	/* Reading Group Descriptor table */
+	read_group_descriptor_table(partition_start_sector);
+
+
+#if 0
 	group_start_sector = partition_start_sector;
 	unsigned int num_sectors_per_block = EXT2_BLOCK_SIZE(super_block) / sector_size_bytes;
-
 	int block_bitmap_size = 0;
+
 	if((EXT2_BLOCKS_PER_GROUP(super_block) % 8) == 0)
 		block_bitmap_size = EXT2_BLOCKS_PER_GROUP(super_block) / 8;
 	else
 		block_bitmap_size = EXT2_BLOCKS_PER_GROUP(super_block) / 8 + 1;
-	block_bitmap = calloc(block_bitmap_size, sizeof(char));
 
 
 	int inode_bitmap_size = 0;
@@ -119,8 +168,10 @@ void verify_partition(int partition_start_sector)
 		inode_bitmap_size = EXT2_INODES_PER_GROUP(super_block) / 8;
 	else
 		inode_bitmap_size = EXT2_INODES_PER_GROUP(super_block) / 8 + 1;
-	inode_bitmap = calloc(inode_bitmap_size, sizeof(char));
 
+
+	block_bitmap = calloc(block_bitmap_size, sizeof(char));
+	inode_bitmap = calloc(inode_bitmap_size, sizeof(char));
 	inode_table = calloc(EXT2_INODES_PER_GROUP(super_block), sizeof(struct ext2_inode));
 
 	printf("Magic Number:0x%x\n", super_block->s_magic);
@@ -141,7 +192,7 @@ void verify_partition(int partition_start_sector)
 			group_start_sector += EXT2_BLOCKS_PER_GROUP(super_block) * SECTORS_PER_BLOCK;
 			group_descriptor_sector += EXT2_BLOCKS_PER_GROUP(super_block) * SECTORS_PER_BLOCK;
 		}
-		
+
 		printf("Group Start sector:%d\n", group_start_sector);
 		read_sectors(group_descriptor_sector, 1, (char*)&group_descriptor);
 		printf("Block Bitmap : %d\n", group_descriptor.group_desc.bg_block_bitmap);
@@ -154,16 +205,16 @@ void verify_partition(int partition_start_sector)
 		for(inode_number = 1; inode_number <= EXT2_INODES_PER_GROUP(super_block); inode_number ++)
 		{
 			//check_inode(inode_number);
-		}		
+		}
 		if (current_group_number == 0)
 		{
-			check_inode(2); 
+			check_inode(2);
 		}
-		
+
 	}
 
 	free(inode_bitmap);
 	free(block_bitmap);
 	free(inode_table);
-
+#endif
 }

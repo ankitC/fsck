@@ -1,7 +1,7 @@
 all: mbr
 
 mbr: readwrite.o mbr.o superblock.o balloc.o main.o
-		 gcc -o mbr mbr.o readwrite.o superblock.o main.o
+		 gcc -o myfsck mbr.o readwrite.o superblock.o main.o
 
 readwrite.o: readwrite.c
 		 gcc -c  -ggdb readwrite.c
@@ -20,4 +20,4 @@ main.o: main.c
 		gcc -c -ggdb main.c
 
 clean:
-		 rm mbr.o readwrite.o superblock.o main.o balloc.o mbr
+		 rm mbr.o readwrite.o superblock.o main.o balloc.o myfsck
