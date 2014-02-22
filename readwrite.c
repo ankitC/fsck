@@ -96,6 +96,38 @@ void read_sectors (int64_t start_sector, unsigned int num_sectors, void *into)
 	}
 }
 
+/* Read 'num_bytees' from 'start_address' to 'into' buffer */
+void read_bytes(int64_t start_address, unsigned int num_bytes, void *into)
+{
+	int ret;
+	int64_t lret;
+
+	if ((lret = lseek64(device, start_address, SEEK_SET)) != start_address) {
+		fprintf(stderr, "Seek to position %"PRId64" failed: "
+				"returned %"PRId64"\n", start_address, lret);
+		exit(-1);
+	}
+	if ((ret = read(device, into, num_bytes)) != num_bytes) {
+		printf("Read disk error at  %"PRId64" length %d\n", start_address, num_bytes);
+		exit(-1);
+	}
+}
+
+
+/* Write 'num_bytes' from the 'source' bufferto the 'start_address' */
+void write_bytes(int64_t start_address, unsigned int num_bytes, void *source) {
+	int ret;
+        int64_t lret;
+	if ((lret = lseek64(device, start_address, SEEK_SET)) != start_address) {
+		fprintf(stderr, "Seek to position %"PRId64" failed: "
+				"returned %"PRId64"\n", start_address, lret);
+	}
+	if ((ret = write(device, source, num_bytes)) != num_bytes) {
+		printf("Write disk error at  %"PRId64" length %d\n", start_address, num_bytes);
+                exit(-1);
+	}
+}
+
 
 /* write_sectors: write a buffer into a specified number of sectors.
  *
