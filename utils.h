@@ -2,11 +2,13 @@
 #define __UTILS_
 
 #include "genhd.h"
+#include "ext2_fs.h"
 
 #define SIGNATURE 0xaa55
 #define MBR_ENTRIES 4
 #define EBR_ENTRIES 1
 #define MBR_SECTOR 0
+
 int device;
 
 struct mbr_block
@@ -35,7 +37,12 @@ struct mbr_entry
 void make_mbr();
 void print_mbr();
 void free_mbr();
+void check_mbr(int entry_id);
 
-extern void verify_partition(int partition_number);
+void pass1();
+
+void verify_partition(int partition_number);
+void get_data(int start_sector, struct ext2_inode* inode, int num_bytes, unsigned char* buf);
+
 
 #endif
