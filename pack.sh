@@ -11,6 +11,6 @@ cp *.c submission/ && \
 cp *.h submission/ && \
 cp Makefile submission/ && \
 cd submission && \
-tar -cvf myfsck.tar *.c *.h && \
+tar -cvf myfsck.tar *.c *.h Makefile && \
 mv myfsck.tar ../ && \
 cd ..
