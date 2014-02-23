@@ -10,6 +10,7 @@
 
 extern int device;
 extern const unsigned int sector_size_bytes;
+extern int total_mbr_entries;
 
 int main (int argc, char **argv)
 {
@@ -19,8 +20,10 @@ int main (int argc, char **argv)
 	int retval;
 	char disk_image[40];
 	char do_check = 0;
+	int i;
+	int partition_to_fix = 255;
 
-	while((retval = getopt(argc, argv, "p:i:"))!= -1){
+	while((retval = getopt(argc, argv, "p:i:f:"))!= -1){
 		switch(retval)
 		{
 			case 'p':
@@ -29,6 +32,9 @@ int main (int argc, char **argv)
 				break;
 			case 'i':
 				strcpy(disk_image, optarg);
+				break;
+			case 'f':
+				partition_to_fix = atoi(optarg);
 				break;
 		}
 	}
@@ -44,7 +50,18 @@ int main (int argc, char **argv)
 	{
 		check_mbr(mbr_entry_to_inspect);
 	}
-	verify_partition(get_start_sector(1));
+
+	if(partition_to_fix != 0)
+	{
+			if(get_mbr_type(partition_to_fix) == LINUX_EXT2_PARTITION)
+				verify_partition(get_start_sector(partition_to_fix));
+	}
+	else
+	{
+		for(i = 0; i < total_mbr_entries; i++)
+			if(get_mbr_type(i + 1) == LINUX_EXT2_PARTITION)
+				verify_partition(get_start_sector(i + 1));
+	}
 	
 	close(device);
 	free_mbr();
