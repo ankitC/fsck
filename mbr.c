@@ -7,6 +7,7 @@ extern int device;
 struct mbr_entry* table_start = NULL;
 struct mbr_entry* table_end = NULL;
 extern const unsigned int sector_size_bytes;
+int total_mbr_entries = 0;
 
 void make_mbr(int device)
 {
@@ -90,6 +91,7 @@ void make_mbr(int device)
 			}
 		}
 	}
+	total_mbr_entries = entry_number;
 }
 
 void check_mbr(int entry_id)
@@ -107,6 +109,22 @@ void check_mbr(int entry_id)
 	}
 	printf("-1\n");
 	return;
+}
+
+
+unsigned char get_mbr_type(int entry_id)
+{
+	struct mbr_entry* m_entry = table_start;
+	while(m_entry != NULL)
+	{
+		if(m_entry->id == entry_id)
+		{
+			return m_entry->entry.sys_ind;
+		}
+		m_entry = m_entry->next_entry;		
+	}
+	
+	return 255;
 }
 
 void print_mbr()
