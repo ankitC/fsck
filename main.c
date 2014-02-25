@@ -8,10 +8,6 @@
 #include "genhd.h"
 #include "utils.h"
 
-extern int device;
-extern const unsigned int sector_size_bytes;
-extern int total_mbr_entries;
-
 int main (int argc, char **argv)
 {
 	unsigned char buf[sector_size_bytes];        /* temporary buffer */

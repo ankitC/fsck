@@ -13,14 +13,8 @@ extern struct ext2_super_block* super_block;
 #define S_IFDIR  0040000
 #define S_IFMT  00170000
 #define S_ISDIR(m)      (((m) & S_IFMT) == S_IFDIR)
-#define SECTOR_SIZE 512
 
 void check_dir_inode(int inode_number, int parent);
-
-int get_vistied_index(int index)
-{
-	return (index - 1);
-}
 
 void check_dir(struct ext2_inode *inode, unsigned char *buf, int inode_number, int parent) {
 	int correct_error = 0;
@@ -32,6 +26,7 @@ void check_dir(struct ext2_inode *inode, unsigned char *buf, int inode_number, i
 	{
 		correct_error = 0;
 		dir = (struct ext2_dir_entry_2 *)(buf + offset);
+		// /printf("Directory Name: %s Type: %d\n",dir->name, dir->file_type);
 		++n;
 		if (n == 1) 
 		{ // .
@@ -79,9 +74,11 @@ void check_dir(struct ext2_inode *inode, unsigned char *buf, int inode_number, i
 				check_dir_inode(get_vistied_index(dir->inode), inode_number + 1);
 		}
 		if (correct_error)
-			printf("Error to be corrected found\n");
-			write_bytes(partition_start_sector * SECTOR_SIZE + inode->i_block[0] * EXT2_BLOCK_SIZE(super_block) + offset, dir->rec_len, dir);
-		offset += dir->rec_len;
+			{
+				//printf("Error to be corrected found\n");
+				write_bytes(partition_start_sector * SECTOR_SIZE + inode->i_block[0] * EXT2_BLOCK_SIZE(super_block) + offset, dir->rec_len, dir);
+			}
+			offset += dir->rec_len;
 		}
 }
 
@@ -90,16 +87,18 @@ void check_dir_inode(int inode_number, int parent)
 	struct ext2_inode *inode;
 	
 	inode_link[inode_number] = inode_link[inode_number] + 1;
-	if(inode_number == 0)
-		return;
+	/* Inodes in lost and found point to 0 */
+	//if(inode_number == 0)
+	//	return;
+	/* Already visited inode */
 	if (inode_link[inode_number] > 1)
 		return;
 	
 	int inode_index = (inode_number) % EXT2_INODES_PER_GROUP(super_block);
 	inode = inode_table[inode_number/EXT2_INODES_PER_GROUP(super_block)] + inode_index;
-	if (!S_ISDIR(inode->i_mode))
-		return;
 	
+	if (!is_directory(inode))
+		return;
 	unsigned char *buf = calloc(inode->i_size, sizeof(char));
 	get_data(partition_start_sector, inode, EXT2_BLOCK_SIZE(super_block), buf);
 	check_dir(inode, buf, inode_number, parent);

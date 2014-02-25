@@ -7,14 +7,11 @@
 
 #define SUPERBLOCK_SIZE 1024
 #define SUPERBLOCK_OFFSET 1024
-#define BLOCKSIZE 1024
-#define SECTOR_SIZE sector_size_bytes
+//#define SECTOR_SIZE sector_size_bytes
 #define SECTORS_PER_SUPERBLOCK SUPERBLOCK_OFFSET/SECTOR_SIZE
 #define MAX_INODE_ENTRIES sizeof(struct ext2_inode) * EXT2_INODES_PER_GROUP(super_block)
-#define SECTORS_PER_BLOCK(m) EXT2_BLOCK_SIZE(m)/sector_size_bytes
 
 #define CEIL(a,b) ((a+b-1)/b)
-
 extern const unsigned int sector_size_bytes;
 
 struct ext2_super_block* super_block = NULL;
@@ -22,7 +19,7 @@ struct ext2_group_desc* group_desc_table = NULL;
 char** block_bitmap_table = NULL;
 char** inode_bitmap_table = NULL;
 struct ext2_inode** inode_table = NULL;
-int partition_start_sector = 0;
+unsigned int partition_start_sector = 0;
 int* inode_link = NULL;
 
 static void make_block_bitmaps(int group_number)
@@ -183,6 +180,8 @@ void verify_partition(int partition_start_sector_address)
 
 	/* Reading Group Descriptor table */
 	read_group_descriptor_table(partition_start_sector);
-	//partition_start_sector = partition_start_sector + 2;
+
 	pass1();
+	pass2();
+	pass3();
 }
