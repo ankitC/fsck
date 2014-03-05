@@ -10,6 +10,8 @@
 #define MBR_SECTOR 0
 #define SECTOR_SIZE sector_size_bytes
 
+#define CEIL_FSCK(a,b) ((a+b-1)/b)
+
 
 int device;
 extern const unsigned int sector_size_bytes;
@@ -18,11 +20,14 @@ extern int total_mbr_entries;
 /* Superblock.c */
 extern unsigned int partition_start_sector;
 extern struct ext2_super_block* super_block;
+extern char** block_bitmap_table;
+extern char** inode_bitmap_table;
 extern struct ext2_inode** inode_table;
 extern int* inode_link;
 extern struct ext2_super_block* super_block;
 extern struct ext2_group_desc* group_desc_table;
 extern int lost_found_dir_inode;
+extern int total_number_of_groups;
 
 struct mbr_block
 {

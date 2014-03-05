@@ -78,53 +78,6 @@ void move_to_lost_found(struct ext2_inode *lost, int inode_number)
 	free(file_name);
 }
 
-void update_parent(struct ext2_inode *inode, int parent, int inode_number)
- {
-	if (!is_directory(inode)) 
-		return;
-	unsigned char *buf = calloc(inode->i_size, sizeof(char));
-	get_data(partition_start_sector, inode, EXT2_BLOCK_SIZE(super_block), buf);
-	int offset = 0;
-	int n = 0;
-	int total_size = inode->i_size;
-	struct ext2_dir_entry_2 *dir;
-//	printf("For Inode %d/Offset = %d and total size is: %d\n",inode_number, offset,inode->i_size);
-	while (offset < total_size) {
-		printf("For Inode %d/Offset = %d and total size is: %d\n",inode_number, offset,inode->i_size);
-		++n;
-		dir = (struct ext2_dir_entry_2 *)(buf + offset);
-		if (n == 2) 
-		{ //..
-			printf("change inode's parent to lost+found\n");
-			dir->inode = parent;
-		} 
-		else if (n > 2 && dir->inode != 0 && 
-			is_directory(inode_table[dir->inode/EXT2_INODES_PER_GROUP(super_block)]
-			+(dir->inode % EXT2_INODES_PER_GROUP(super_block)))) 
-		{
-			dir->inode = 0;
-		}
-		offset += dir->rec_len;
-	}
-	offset = 0;
-	int i;
-	int to_write_size;
-	for (i = 0; i < 12; ++i) {
-		if (total_size - offset < EXT2_BLOCK_SIZE(super_block))
-			to_write_size = total_size - offset;
-		else
-			to_write_size = EXT2_BLOCK_SIZE(super_block);
-		
-		write_bytes(partition_start_sector * sector_size_bytes + 
-			inode->i_block[i] * EXT2_BLOCK_SIZE(super_block), 
-			to_write_size, buf + offset);
-		
-		offset += EXT2_BLOCK_SIZE(super_block);
-		if (offset >= total_size) 
-			break;
-	}
-}
-
 void pass2()
 {
 	int i;
@@ -158,10 +111,5 @@ void pass2()
 			}
 		}
 	}
-//	for (i = 0; i < group_number * EXT2_INODES_PER_GROUP(super_block); ++i)
-//		inode_link[i] = 0;
-	//inode_link[10] = 0;
-	//printf("Printing lost and found directories\n");
-	//check_dir_inode(get_vistied_index(lost_found_dir_inode), EXT2_ROOT_INO);
 	pass1();
 }
