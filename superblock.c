@@ -174,7 +174,7 @@ void verify_partition(int partition_start_sector_address)
 	int current_group_number = 0;
 	unsigned int inode_number = 0;
 	partition_start_sector = partition_start_sector_address;
-
+	printf("partition_start_sector = %d\n", partition_start_sector);
 	/* Reading Super_block */
 	read_super_block(partition_start_sector);
 

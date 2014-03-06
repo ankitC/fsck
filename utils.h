@@ -71,7 +71,11 @@ struct ext2_inode* find_inode_by_number(int inode_number);
 void pass1();
 void pass2();
 void pass3();
+void pass4();
 
 void check_dir_inode(int inode_number, int parent);
+int isBlockBitmapSet(int blockNo, unsigned char *blockBitmap, int groupNum, int blockSize, struct ext2_super_block *superBlock);
+void check_secondary(int blockno);
+
 
 #endif
