@@ -175,9 +175,10 @@ void verify_partition(int partition_start_sector_address)
 	unsigned int inode_number = 0;
 	partition_start_sector = partition_start_sector_address;
 	printf("partition_start_sector = %d\n", partition_start_sector);
+
 	/* Reading Super_block */
 	read_super_block(partition_start_sector);
-
+	printf("block_size = %d\n",EXT2_BLOCK_SIZE(super_block));
 	/* Reading Group Descriptor table */
 	read_group_descriptor_table(partition_start_sector);
 

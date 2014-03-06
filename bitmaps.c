@@ -42,7 +42,7 @@ int isBlockBitmapSet(int blockNo, unsigned char *blockBitmap, int groupNum, int 
 	groupBlockNo = blockNo % superBlock->s_blocks_per_group;
 	int index;
 	int bit;
-	//getIndexBit(groupBlockNo, &index, &bit);
+
 	if(blockNo >= 1921 && blockNo <= 1923)
 		printf("BOLD::CAME TO %d \n", blockNo);
 	if(blockNo >= 1349 && blockNo <= 1351)
@@ -120,8 +120,12 @@ void checkDataBlock(int localId)
 		}
 		free(buf);
 	}
-	if (is_symbolic_link(inode)) 
+	if (is_symbolic_link(inode))
+	{
+		if(inode->i_size > 60)
+			check_secondary(inode->i_block[0]);
 		return;
+	}
 	// set data block
 	tempSize = 0;
 	int i, j, k;
@@ -162,7 +166,7 @@ void checkDataBlock(int localId)
 		check_secondary(get_vistied_index(dindblock[i]));
 		for (j = 0; j < len; ++j) {
 			setBlockBitmapSet(get_vistied_index(indblock[j]), new_bitmap, total_number_of_groups, block_size, super_block, 1);
-			check_secondary(get_vistied_index(indblock[i]));
+			check_secondary(get_vistied_index(indblock[j]));
 			tempSize += block_size;
 			if (tempSize >= totalSize) goto FREE_MEMORY;
 		}
@@ -196,7 +200,6 @@ void checkDataBlock(int localId)
 		free(indblock);
 		free(dindblock);
 		free(tindblock);
-
 }
 
 
@@ -218,6 +221,7 @@ void check_block_bitmap()
 	{
 		//superBlock 0
 		++used;
+		//TODO: 0, 1, 3, 5, 7
 		bitmap = isBlockBitmapSet(i * blocks_per_group + 0, block_bitmap_table[i], total_number_of_groups, block_size, super_block);
 		if (!bitmap) 
 		{
@@ -226,6 +230,7 @@ void check_block_bitmap()
 			change = 1;
 		}
 		setBlockBitmapSet(i * blocks_per_group + 0, new_bitmap, total_number_of_groups, block_size, super_block, 1);
+		
 		//groupDescriptors 1 .. group_desc_blocks
 		for (j = 1; j <= group_desc_blocks; ++j) 
 		{

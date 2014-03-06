@@ -98,7 +98,8 @@ void get_data(int start_sector, struct ext2_inode *inode, int num_bytes, unsigne
 	if(!done)
 	for (i = 0; i < EXT2_NDIR_BLOCKS; ++i) 
 	{ 
-		read_bytes((start_sector + 2* inode->i_block[i]) * SECTOR_SIZE, num_bytes, buf + offset);
+		check_secondary(get_vistied_index(inode->i_block[i]));
+		read_bytes((start_sector * SECTOR_SIZE + num_bytes * inode->i_block[i]), num_bytes, buf + offset);
 		offset += num_bytes;
 		//printf("Offset = %d\n", offset);
 		if (offset >= total_size) 
@@ -111,9 +112,11 @@ void get_data(int start_sector, struct ext2_inode *inode, int num_bytes, unsigne
 	// Indirect Blocks
 	if(!done)
 	{
+	check_secondary(inode->i_block[EXT2_IND_BLOCK]);
 	read_bytes(start_sector * SECTOR_SIZE + num_bytes * inode->i_block[EXT2_IND_BLOCK], num_bytes, indblock);
 	for (i = 0; i < len;  ++i) 
 	{
+		check_secondary(get_vistied_index(indblock[i]));
 		read_bytes(start_sector * SECTOR_SIZE + num_bytes * indblock[i], num_bytes, buf + offset);
 		offset += num_bytes;
 		if (offset >= total_size) 
@@ -126,12 +129,15 @@ void get_data(int start_sector, struct ext2_inode *inode, int num_bytes, unsigne
 	// Doubly-indirect Blocks
 	if(!done)
 	{
+	check_secondary(inode->i_block[EXT2_DIND_BLOCK]);
 	read_bytes(start_sector * SECTOR_SIZE + num_bytes * inode->i_block[EXT2_DIND_BLOCK], num_bytes, dindblock);
 	for (i = 0; i < len; ++i) 
 	{
+		check_secondary(get_vistied_index(dindblock[i]));
 		read_bytes(start_sector * SECTOR_SIZE + num_bytes * dindblock[i], num_bytes, indblock);
 		for (j = 0; j < len; ++j) 
 		{
+			check_secondary(get_vistied_index(indblock[j]));
 			read_bytes(start_sector * SECTOR_SIZE + num_bytes * indblock[j], num_bytes, buf + offset);
 			offset += num_bytes;
 			if (offset >= total_size)
@@ -145,15 +151,19 @@ void get_data(int start_sector, struct ext2_inode *inode, int num_bytes, unsigne
 	// Thriply-indirect Blocks
 	if(!done)
 	{
+	check_secondary(inode->i_block[EXT2_TIND_BLOCK]);
 	read_bytes(start_sector * SECTOR_SIZE + num_bytes * inode->i_block[EXT2_TIND_BLOCK], num_bytes, tindblock);
 	for (i = 0; i < len; ++i) 
 	{
+		check_secondary(get_vistied_index(tindblock[i]));
 		read_bytes(start_sector * SECTOR_SIZE + num_bytes * tindblock[i], num_bytes, dindblock);
 		for (j = 0; j < len; ++j) 
 		{
+			check_secondary(get_vistied_index(dindblock[j]));
 			read_bytes(start_sector * SECTOR_SIZE + num_bytes * dindblock[j], num_bytes, indblock);
 			for (k = 0; k < len; ++k) 
 			{
+				check_secondary(get_vistied_index(indblock[k]));
 				read_bytes(start_sector * SECTOR_SIZE + num_bytes * indblock[k], num_bytes, buf + offset);
 				offset += num_bytes;
 				if (offset >= total_size)
