@@ -9,10 +9,10 @@ int get_vistied_index(int index)
 	return (index - 1);
 }
 
-struct ext2_inode* find_inode_by_number(inode_number)
+struct ext2_inode* find_inode_by_number(int inode_number)
 {
-	int group_number = inode_number / EXT2_BLOCK_SIZE(super_block);
-	int inode_index = inode_number % EXT2_BLOCKS_PER_GROUP(super_block);
+	int group_number = inode_number / EXT2_INODES_PER_GROUP(super_block);
+	int inode_index = inode_number % EXT2_INODES_PER_GROUP(super_block);
 	return inode_table[group_number] + inode_index;
 
 }
@@ -96,7 +96,7 @@ void get_data(int start_sector, struct ext2_inode *inode, int num_bytes, unsigne
 //	printf("Inode Size = %d\n", inode->i_size );
 	// Direct Blocks
 	if(!done)
-	for (i = 0; i < EXT2_NDIR_BLOCKS; ++i) 
+	for (i = 0; i < EXT2_NDIR_BLOCKS && !done; ++i) 
 	{ 
 		check_secondary(get_vistied_index(inode->i_block[i]));
 		read_bytes((start_sector * SECTOR_SIZE + num_bytes * inode->i_block[i]), num_bytes, buf + offset);
@@ -114,7 +114,7 @@ void get_data(int start_sector, struct ext2_inode *inode, int num_bytes, unsigne
 	{
 	check_secondary(inode->i_block[EXT2_IND_BLOCK]);
 	read_bytes(start_sector * SECTOR_SIZE + num_bytes * inode->i_block[EXT2_IND_BLOCK], num_bytes, indblock);
-	for (i = 0; i < len;  ++i) 
+	for (i = 0; i < len && !done;  ++i) 
 	{
 		check_secondary(get_vistied_index(indblock[i]));
 		read_bytes(start_sector * SECTOR_SIZE + num_bytes * indblock[i], num_bytes, buf + offset);
@@ -131,11 +131,11 @@ void get_data(int start_sector, struct ext2_inode *inode, int num_bytes, unsigne
 	{
 	check_secondary(inode->i_block[EXT2_DIND_BLOCK]);
 	read_bytes(start_sector * SECTOR_SIZE + num_bytes * inode->i_block[EXT2_DIND_BLOCK], num_bytes, dindblock);
-	for (i = 0; i < len; ++i) 
+	for (i = 0; i < len && !done; ++i) 
 	{
 		check_secondary(get_vistied_index(dindblock[i]));
 		read_bytes(start_sector * SECTOR_SIZE + num_bytes * dindblock[i], num_bytes, indblock);
-		for (j = 0; j < len; ++j) 
+		for (j = 0; j < len && !done; ++j) 
 		{
 			check_secondary(get_vistied_index(indblock[j]));
 			read_bytes(start_sector * SECTOR_SIZE + num_bytes * indblock[j], num_bytes, buf + offset);
@@ -153,15 +153,15 @@ void get_data(int start_sector, struct ext2_inode *inode, int num_bytes, unsigne
 	{
 	check_secondary(inode->i_block[EXT2_TIND_BLOCK]);
 	read_bytes(start_sector * SECTOR_SIZE + num_bytes * inode->i_block[EXT2_TIND_BLOCK], num_bytes, tindblock);
-	for (i = 0; i < len; ++i) 
+	for (i = 0; i < len && !done; ++i) 
 	{
 		check_secondary(get_vistied_index(tindblock[i]));
 		read_bytes(start_sector * SECTOR_SIZE + num_bytes * tindblock[i], num_bytes, dindblock);
-		for (j = 0; j < len; ++j) 
+		for (j = 0; j < len && !done; ++j) 
 		{
 			check_secondary(get_vistied_index(dindblock[j]));
 			read_bytes(start_sector * SECTOR_SIZE + num_bytes * dindblock[j], num_bytes, indblock);
-			for (k = 0; k < len; ++k) 
+			for (k = 0; k < len && !done; ++k) 
 			{
 				check_secondary(get_vistied_index(indblock[k]));
 				read_bytes(start_sector * SECTOR_SIZE + num_bytes * indblock[k], num_bytes, buf + offset);
