@@ -9,6 +9,7 @@ struct mbr_entry* table_end = NULL;
 extern const unsigned int sector_size_bytes;
 int total_mbr_entries = 0;
 
+/* Constructing the MBR and storing it for reference */
 void make_mbr(int device)
 {
 	unsigned char buf[sector_size_bytes];  
@@ -52,11 +53,9 @@ void make_mbr(int device)
 	}
 #endif
 
+	/* Checking the extended partitions */
 	for(i=0; i<MBR_ENTRIES; i++)
 	{
-		//	printf("%d\t%02x\t%d\t%d\n",i,my_mbr->entries[i].sys_ind,\
-		//my_mbr->entries[i].start_sect, my_mbr->entries[i].nr_sects);
-
 		if(my_mbr->entries[i].sys_ind == DOS_EXTENDED_PARTITION ||
 				my_mbr->entries[i].sys_ind == LINUX_EXTENDED_PARTITION)
 		{
@@ -94,6 +93,10 @@ void make_mbr(int device)
 	total_mbr_entries = entry_number;
 }
 
+/* Checks the MBR table for the requested entry 
+	Prints the record if requested entry is found
+	else prints -1.
+*/
 void check_mbr(int entry_id)
 {
 	struct mbr_entry* m_entry = table_start;
@@ -112,6 +115,7 @@ void check_mbr(int entry_id)
 }
 
 
+/* Get the type of the mbr entry given the id */
 unsigned char get_mbr_type(int entry_id)
 {
 	struct mbr_entry* m_entry = table_start;
@@ -127,6 +131,7 @@ unsigned char get_mbr_type(int entry_id)
 	return 255;
 }
 
+/* Prints the complete mbr for debug */
 void print_mbr()
 {
 	struct mbr_entry* m_entry = table_start;
@@ -139,6 +144,7 @@ void print_mbr()
 	}
 }
 
+/* Free the MBR linked list at the end */
 void free_mbr()
 {
 	
@@ -155,6 +161,7 @@ void free_mbr()
 	table_end = NULL;
 }
 
+/* Get the start sector of a particular partition to perform fsck */
 int get_start_sector(unsigned int partition_number)
 {
 	struct mbr_entry* m_entry = table_start;
