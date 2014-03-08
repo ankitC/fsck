@@ -51,8 +51,8 @@ int main (int argc, char **argv)
 	/* Run FSCK on the specific partition requested */
 	if(partition_to_fix != 0)
 	{
-			if(get_mbr_type(partition_to_fix) == LINUX_EXT2_PARTITION)
-				verify_partition(get_start_sector(partition_to_fix));
+		if(get_mbr_type(partition_to_fix) == LINUX_EXT2_PARTITION)
+			verify_partition(get_start_sector(partition_to_fix));
 	}
 	/* Run FSCK on the entire disk */
 	else

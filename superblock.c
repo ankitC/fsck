@@ -78,7 +78,7 @@ static void make_inode_table(int group_number)
 	/* Calculate the number of sectors to read the inode table */
 	int num_sectors_inode_table = CEIL_FSCK(inode_table_size, 512);
 	char inode_table_buf[inode_table_size];
-	
+
 	read_sectors(inode_table_sector_number, num_sectors_inode_table , inode_table_buf);
 	memcpy(inode_table[group_number], inode_table_buf, inode_table_size);
 }
@@ -121,7 +121,7 @@ static void read_group_descriptor_table()
 	printf("bufsize = %d \n", buf_size);
 #endif
 
-/* Read group descriptor table and save it in memory */
+	/* Read group descriptor table and save it in memory */
 	read_sectors(group_desc_table_sector, group_desc_num_sectors ,group_desc_table_buf);
 	group_desc_table =	calloc(total_number_of_groups, sizeof(struct ext2_group_desc));
 	memcpy(group_desc_table, group_desc_table_buf, \
@@ -145,9 +145,26 @@ static void read_group_descriptor_table()
 		make_inode_bitmaps(i);
 		make_inode_table(i);
 	}
-
 }
 
+static void free_structures()
+{
+	int i;
+
+	for(i = 0 ; i< total_number_of_groups; i++)
+	{
+		free(inode_table[i]);
+		free(inode_bitmap_table[i]);
+		free(block_bitmap_table[i]);
+	}
+
+	free(inode_table);
+	free(block_bitmap_table);
+	free(inode_bitmap_table);
+	free(group_desc_table);
+	free(super_block);
+	free(inode_link);
+}
 void verify_partition(int partition_start_sector_address)
 {
 	int superblock_start_sector = (partition_start_sector) + SUPERBLOCK_OFFSET/SECTOR_SIZE;
@@ -170,4 +187,6 @@ void verify_partition(int partition_start_sector_address)
 	pass2();
 	pass3();
 	pass4();
+
+	free_structures();
 }

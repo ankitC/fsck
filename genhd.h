@@ -14,8 +14,8 @@
 #include <linux/major.h>
 
 enum {
-/* These three have identical behaviour; use the second one if DOS fdisk gets
-   confused about extended/logical partitions starting past cylinder 1023. */
+	/* These three have identical behaviour; use the second one if DOS fdisk gets
+	   confused about extended/logical partitions starting past cylinder 1023. */
 	DOS_EXTENDED_PARTITION = 5,
 	LINUX_EXTENDED_PARTITION = 0x85,
 	WIN98_EXTENDED_PARTITION = 0x0f,
@@ -35,11 +35,11 @@ enum {
 	OPENBSD_PARTITION = 0xa6,    /* OpenBSD Partition ID */
 	NETBSD_PARTITION = 0xa9,   /* NetBSD Partition ID */
 	BSDI_PARTITION = 0xb7,    /* BSDI Partition ID */
-/* Ours is not to wonder why.. */
+	/* Ours is not to wonder why.. */
 	BSD_PARTITION =	FREEBSD_PARTITION,
 	MINIX_PARTITION = 0x81,  /* Minix Partition ID */
 	UNIXWARE_PARTITION = 0x63,		/* Partition ID, same as */
-						/* GNU_HURD and SCO Unix */
+	/* GNU_HURD and SCO Unix */
 };
 
 struct partition {
@@ -71,7 +71,7 @@ struct gendisk {
 	int major;			/* major number of driver */
 	const char *major_name;		/* name of major driver */
 	int minor_shift;		/* number of times minor is shifted to
-					   get real minor */
+							   get real minor */
 	int max_p;			/* maximum partitions per device */
 
 	struct hd_struct *part;		/* [indexed by minor] */
@@ -164,7 +164,7 @@ struct bsd_disklabel {
 	__u32	d_magic2;		/* the magic number (again) */
 	__u16	d_checksum;		/* xor of data incl. partitions */
 
-			/* filesystem and partition information: */
+	/* filesystem and partition information: */
 	__u16	d_npartitions;		/* number of partitions in following */
 	__u32	d_bbsize;		/* size of boot area at sn0, bytes */
 	__u32	d_sbsize;		/* max size of fs superblock, bytes */
@@ -209,13 +209,13 @@ struct unixware_disklabel {
 	__u32   d_secsize;              /* # of bytes per sector */
 	__u32   d_part_start;           /* # of first sector of this partition */
 	__u32   d_unknown1[12];         /* ? */
- 	__u32	d_alt_tbl;              /* byte offset of alternate table */
- 	__u32	d_alt_len;              /* byte length of alternate table */
- 	__u32	d_phys_cyl;             /* # of physical cylinders per device */
- 	__u32	d_phys_trk;             /* # of physical tracks per cylinder */
- 	__u32	d_phys_sec;             /* # of physical sectors per track */
- 	__u32	d_phys_bytes;           /* # of physical bytes per sector */
- 	__u32	d_unknown2;             /* ? */
+	__u32	d_alt_tbl;              /* byte offset of alternate table */
+	__u32	d_alt_len;              /* byte length of alternate table */
+	__u32	d_phys_cyl;             /* # of physical cylinders per device */
+	__u32	d_phys_trk;             /* # of physical tracks per cylinder */
+	__u32	d_phys_sec;             /* # of physical sectors per track */
+	__u32	d_phys_bytes;           /* # of physical bytes per sector */
+	__u32	d_unknown2;             /* ? */
 	__u32   d_unknown3;             /* ? */
 	__u32	d_pad[8];               /* pad */
 
@@ -243,7 +243,7 @@ struct unixware_disklabel {
 char *disk_name (struct gendisk *hd, int minor, char *buf);
 
 extern void devfs_register_partitions (struct gendisk *dev, int minor,
-				       int unregister);
+		int unregister);
 
 
 

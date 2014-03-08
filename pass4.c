@@ -22,16 +22,16 @@ void pass4()
 		if (bitmap && !inode_link[i])
 		{
 			/* Clear this inode from the inode bitmap */
-			printf("Inode %d : bitmap is inconsistent with inode table:\
-				   	%d Vs %d\n",i + 1, bitmap, inode_link[i]);
+			printf("Pass 4: Inode %d : bitmap is inconsistent with inode table:\
+					%d Vs %d\n",i + 1, bitmap, inode_link[i]);
 			set_inode_bitmap(i, 0);
 			change_req = 1;
 		}
 		else if (!bitmap && inode_link[i])
 		{
-			/*Set the inode in the inode bitmap */
-			printf("Inode %d : bitmap is inconsistent with inode table:\
-				   	%d Vs %d\n", i + 1, bitmap, inode_link[i]);
+			/* Set the inode in the inode bitmap */
+			printf("Pass 4: Inode %d : bitmap is inconsistent with inode table:\
+					%d Vs %d\n", i + 1, bitmap, inode_link[i]);
 			set_inode_bitmap(i, 1);
 			change_req = 1;
 		}

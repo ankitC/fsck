@@ -26,7 +26,7 @@ void check_dir_inode(int inode_number, int parent)
 {
 	struct ext2_inode *inode;
 
-	/* Increment the link count to the inode as it is visited */	
+	/* Increment the link count to the inode as it is visited */
 	inode_link[inode_number] = inode_link[inode_number] + 1;
 
 	/* If already visited inode, then return */
@@ -78,14 +78,14 @@ void check_dir(struct ext2_inode *inode, unsigned char *buf, int inode_number, i
 			{
 				if (dir->inode != (inode_number + 1))
 				{
-					printf("Error: Dir Inode %d: . has wrong dir->inode %d and name %s, change to itself\n", inode_number + 1, dir->inode, dir->name);
+					printf("Pass1: Dir Inode %d: . has wrong dir->inode %d and name %s, change to itself\n", inode_number + 1, dir->inode, dir->name);
 					dir->inode = inode_number + 1;
 					correct_error = 1;
 				}
 			}
 			else
 			{
-				printf("Error: Dir Inode %d: first dir is not ., change to .\n", inode_number + 1);
+				printf("Pass1: Dir Inode %d: first dir is not ., change to .\n", inode_number + 1);
 				dir->name_len = 1;
 				dir->name[0] = '.';
 				dir->inode = inode_number + 1;
@@ -102,14 +102,14 @@ void check_dir(struct ext2_inode *inode, unsigned char *buf, int inode_number, i
 			{
 				if (dir->inode != parent)
 				{
-					printf("Error: Dir Inode %d: .. has wrong dir->inode %d, change to its parent\n", inode_number + 1, dir->inode);
+					printf("Pass1: Dir Inode %d: .. has wrong dir->inode %d, change to its parent\n", inode_number + 1, dir->inode);
 					dir->inode = parent;
 					correct_error = 1;
 				}
 			}
 			else
 			{
-				printf("Error: Dir Inode %d: second dir is not .., change to ..\n", inode_number + 1);
+				printf("Pass1: Dir Inode %d: second dir is not .., change to ..\n", inode_number + 1);
 				dir->name_len = 2;
 				dir->name[0] = '.';
 				dir->name[1] = '.';

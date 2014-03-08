@@ -36,7 +36,7 @@ void make_mbr(int device)
 		m_entry->next_entry = NULL;
 		m_entry->entry = my_mbr->entries[i];
 		if(table_end != NULL)
-		table_end->next_entry = m_entry;
+			table_end->next_entry = m_entry;
 		table_end = m_entry;
 		if(i == 0)
 			table_start = m_entry;
@@ -48,7 +48,7 @@ void make_mbr(int device)
 	while(m_entry != NULL)
 	{
 		printf("%02x\t%d\t%d\n",m_entry->entry.sys_ind,\
-		m_entry->entry.start_sect, m_entry->entry.nr_sects);
+				m_entry->entry.start_sect, m_entry->entry.nr_sects);
 		m_entry = m_entry->next_entry;
 	}
 #endif
@@ -94,9 +94,9 @@ void make_mbr(int device)
 }
 
 /* Checks the MBR table for the requested entry 
-	Prints the record if requested entry is found
-	else prints -1.
-*/
+   Prints the record if requested entry is found
+   else prints -1.
+   */
 void check_mbr(int entry_id)
 {
 	struct mbr_entry* m_entry = table_start;
@@ -105,7 +105,7 @@ void check_mbr(int entry_id)
 		if(m_entry->id == entry_id)
 		{
 			printf("0x%02X %d %d\n", m_entry->entry.sys_ind,\
-				m_entry->entry.start_sect, m_entry->entry.nr_sects);
+					m_entry->entry.start_sect, m_entry->entry.nr_sects);
 			return;
 		}
 		m_entry = m_entry->next_entry;		
@@ -127,7 +127,7 @@ unsigned char get_mbr_type(int entry_id)
 		}
 		m_entry = m_entry->next_entry;		
 	}
-	
+
 	return 255;
 }
 
@@ -139,7 +139,7 @@ void print_mbr()
 	while(m_entry != NULL)
 	{
 		printf("%02x\t%d\t%d\n",m_entry->entry.sys_ind,\
-		m_entry->entry.start_sect, m_entry->entry.nr_sects);
+				m_entry->entry.start_sect, m_entry->entry.nr_sects);
 		m_entry = m_entry->next_entry;
 	}
 }
@@ -147,7 +147,7 @@ void print_mbr()
 /* Free the MBR linked list at the end */
 void free_mbr()
 {
-	
+
 	struct mbr_entry* m_entry = table_start;
 	struct mbr_entry* to_free;
 
